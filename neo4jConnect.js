@@ -63,7 +63,7 @@ request(options, function(err, response, body){
   for(var i = 0; i < body.items.length; i++) {
     session
       .run("MERGE (a:Repo {name:'" + body.items[i].name + "', repo_id:'" + body.items[i].id +
-        "', repo_contributers_url:'" + body.items[i].contributors_url + "'})")
+        "', repo_contributors_url:'" + body.items[i].contributors_url + "'})")
       .then(function() {
         console.log(count);
         ++count;

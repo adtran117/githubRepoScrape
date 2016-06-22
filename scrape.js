@@ -6,9 +6,15 @@ var keys = require('./keys.js');
 var driver = neo4j.driver("bolt://localhost", neo4j.auth.basic("neo4j", "neo4j1"));
 var session = driver.session();
 
-//sample!
-// 16 queries per minute
+//sample browser get request link
 // https://api.github.com/search/repositories?q=+language:fortran+created:2008-01-01..2013-01-01&page=1&per_page=100
+
+// With my 2015 Macbook Pro 13 inch and HackReactor's bandwidth, I get roughly 16 
+// queries finished per minute. Note that Github's search is sometimes buggy..it doesn't
+// always give the correct number of results. You can test this by entering this query into
+// github's search bar: language:fortran created:2001-04-09..2016-07-09
+// At the time of writing this, the # of repos should be 7378 but it can sometimes fluctuate
+// to ~5000 or ~6000 results instead. However, on average it will still show the correct result of 7378.
 
 // What the results should be if you look for fortran
 //total: 7378 repos
@@ -94,7 +100,7 @@ var dbInsert = function(body) {
 		session
 		// Insert ONE node into db
 	      .run("MERGE (a:Repo {name:'" + body.items[i].name + "', repo_id:'" + body.items[i].id +
-	        "', repo_contributers_url:'" + body.items[i].contributors_url + "'})")
+	        "', repo_contributors_url:'" + body.items[i].contributors_url + "'})")
 	      // Run this when finished inserting..
 	      .then(function() {
 	      	// I use an insertCount variable here to keep track how many times a node was inserted. The 
@@ -121,6 +127,8 @@ var dbInsert = function(body) {
 		          	scrape();
 	          	} else {
 	          		console.log('Finished!');
+	          		session.close();
+	          		driver.close();
 	          	}
 	          }
 	        }
