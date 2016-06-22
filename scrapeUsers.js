@@ -33,7 +33,7 @@ var scrape = function() {
 
 	var findNode = function(index) {
 		session
-			.run('MATCH (n:Repo) WHERE id(n) = ' + index + ' return n.repo_contributors_url as node')
+			.run('MATCH (n:Repo) WHERE id(n) = ' + index + ' return n.contributors_url as node')
 			.then(function(results){
 				var userEndpoint = results.records[0].get('node');
 				getUsers(userEndpoint);
@@ -64,6 +64,7 @@ var getUsers = function(endpoint) {
     	'User-Agent': 'adtran117'
   	}
 	}
+
 	request(options, function(err, response, body) {
 		console.log('Made a request to github asking for users for repo# ' + currentRepoIndex);
 		if(err) {
@@ -81,12 +82,15 @@ var getUsers = function(endpoint) {
 						"', followers_url:'" + body[i].followers_url + "', following_url:'" + body[i].following_url +
 						"', starred_url:'" + body[i].starred_url + "', subscriptions_url:'" + body[i].subscriptions_url + 
 						"', organizations_url:'" + body[i].organizations_url + "', repos_url:'" + body[i].repos_url + "'})")
-					.then(function(){
+					.then(function(result){	
+						var login = body[insertCount].login;
 						++insertCount;
+						linkNodes(login, endpoint);
 						// If amount inserted reaches equals amount of users that contributed to the repo go to next repo
 						if(insertCount === body.length) {
 							++currentRepoIndex;
 							if(currentRepoIndex <= totalRepos) {
+
 								scrape();
 							}
 						}
@@ -105,6 +109,18 @@ var getUsers = function(endpoint) {
 	})
 }
 
+//match (n:Repo {name:'Slycot'}), (u:User {login:'wernsaar'}) create (u)-[:CONTRIBUTED_TO]->(n)
+var linkNodes = function(login, userEndpoint){
+	session
+		.run("MATCH (n:Repo {contributors_url:'" + userEndpoint + "'}), (u:User {login:'" + login + 
+			"'}) CREATE (u)-[:CONTRIBUTED_TO]->(n)")
+		.then(function(){
+			// console.log('success');
+		})
+		.catch(function(err) {
+			console.log("ERROR", err)
+		})
+}
 
 scrape();
 // session.run('match (n:Repo) where id(n) = 7379 return n')
