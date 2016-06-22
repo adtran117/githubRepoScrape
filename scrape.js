@@ -99,8 +99,8 @@ var dbInsert = function(body) {
 	for (var i = 0; i < body.items.length; i++) {
 		session
 		// Insert ONE node into db
-	      .run("MERGE (a:Repo {name:'" + body.items[i].name + "', repo_id:'" + body.items[i].id +
-	        "', repo_contributors_url:'" + body.items[i].contributors_url + "'})")
+	      .run("MERGE (a:Repo {name:'" + body.items[i].name + "', id:" + body.items[i].id +
+	        ", contributors_url:'" + body.items[i].contributors_url + "'})")
 	      // Run this when finished inserting..
 	      .then(function() {
 	      	// I use an insertCount variable here to keep track how many times a node was inserted. The 
